@@ -12,7 +12,8 @@ Ce repo contient le code source de l'API de Twittueur.
 2. Créez un dossier "db" à la racine du projet
 3. Lancez le serveur avec [Go](https://go.dev/doc/install)
 
-`go run main.go`
+`go build . && ./twittueur_api`
+
 4. Vous pouvez maintenant accéder à l'API à l'adresse http://localhost:1323
 
 ## Arborescence
