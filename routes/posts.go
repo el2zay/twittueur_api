@@ -92,7 +92,7 @@ func PostData(c echo.Context) error {
 		if err := viper.Unmarshal(&data); err != nil {
 			return err
 		}
-
+		// ! REGARDER ICI POUR LES LIKES
 		// Trouver le post avec l'ID correspondant à la valeur de comment
 		for i, post := range data.Posts {
 			if post.ID == comment {

@@ -52,54 +52,41 @@ func PostLikes(c echo.Context) error {
 		return err
 	}
 
-	viper.SetConfigName("posts")
-	viper.SetConfigType("json")
-	viper.AddConfigPath("db")
-
-	if err := viper.ReadInConfig(); err != nil {
-		return err
-	}
-
 	// Variable pour dire si on a retiré ou ajouté le like
 	var wordResponse string
 
-	// Rajouter le like dans le fichier posts.json
+	var data models.PostRequest
+	if err := viper.Unmarshal(&data); err != nil {
+		return err
+	}
 
-	// Rajouter le like dans le fichier posts.json
-	posts := viper.Get("posts").([]interface{})
-	// Boucle for pour parcourir les posts
-	for _, post := range posts {
-		p := post.(map[string]interface{}) // On cast le post en map[string]interface{} afin de pouvoir accéder à ses valeurs
-		if p["id"].(string) == id {        // Si l'id du post est égal à l'id donné en paramètre
-			likedby, ok := p["likedby"].([]interface{}) // On récupère les personnes qui ont liké le post
-			if !ok {
-				likedby = []interface{}{} // Si likedby est vide, on met une nouvelle liste vide
-			}
-			index := -1
-			for i, user := range likedby { // On parcourt les personnes qui ont liké le post
-				if user.(string) == username { // Si le username est déjà dans likedby
-					index = i // On récupère l'index de ce username
+	// Parcourir les posts pour trouver celui avec l'id spécifié
+	for i, post := range data.Posts {
+		if post.ID == id {
+			// Trouvé le post, récupérer la liste des likes directement
+			likedby := post.Likedby
+			// Vérifier si l'utilisateur a déjà liké le post
+			for j, user := range likedby {
+				if user == username {
+					// Si oui, retirer le like
+					likedby = append(likedby[:j], likedby[j+1:]...)
+					wordResponse = "retiré"
 					break
 				}
 			}
-			if index != -1 {
-				// Si le username est déjà dans likedby, on le retire
-				likedby = append(likedby[:index], likedby[index+1:]...)
-				wordResponse = "retiré"
-			} else {
-				// Sinon, on ajoute le username à likedby
+			// Si l'utilisateur n'a pas liké le post, ajouter le like
+			if wordResponse == "" {
 				likedby = append(likedby, username)
 				wordResponse = "ajouté"
 			}
-			p["likedby"] = likedby
+			data.Posts[i].Likedby = likedby
 			break
 		}
 	}
 
-	viper.Set("posts", posts)
-
-	err = viper.WriteConfig()
-	if err != nil {
+	// Réécrire le fichier avec le nouveau contenu
+	viper.Set("posts", data.Posts)
+	if err := viper.WriteConfig(); err != nil {
 		return err
 	}
 
@@ -128,29 +115,20 @@ func GetLikes(c echo.Context) error {
 		return err
 	}
 
-	// Configuration de Viper pour lire le fichier posts.json
-	viper.SetConfigName("posts")
-	viper.SetConfigType("json")
-	viper.AddConfigPath("db")
+	var data models.PostRequest
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := viper.Unmarshal(&data); err != nil {
 		return err
 	}
 
-	// Trouver le post avec l'id spécifié
-	posts := viper.Get("posts").([]interface{})
-
-	for _, post := range posts {
-		p := post.(map[string]interface{}) // On cast le post en map[string]interface{} afin de pouvoir accéder à ses valeurs
-
-		if p["id"].(string) == id {
-			likedby, ok := p["likedby"].([]interface{}) // On récupère les personnes qui ont liké le post
-			if !ok {
-				likedby = []interface{}{} // Si likedby est vide, on met une nouvelle liste vide
-			}
-			return c.JSON(http.StatusOK, models.Response{Success: true, Message: "Liste des personnes qui ont liké le post.", Data: likedby})
+	// Parcourir les posts pour trouver celui avec l'id spécifié
+	for _, post := range data.Posts {
+		if post.ID == id {
+			// Trouvé le post, retourner la liste des likes
+			return c.JSON(http.StatusOK, models.Response{Success: true, Data: post.Likedby})
 		}
 	}
 
-	return nil
+	// Si le post n'est pas trouvé
+	return c.JSON(http.StatusNotFound, models.Response{Success: false, Message: "Post non trouvé."})
 }
