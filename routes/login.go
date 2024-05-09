@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"os"
 	"twittueur_api/models"
 	"twittueur_api/src/utils"
@@ -15,11 +16,11 @@ func Login(c echo.Context) error {
 	passphrase := c.FormValue("passphrase")
 
 	if passphrase == "" {
-		return c.JSON(400, models.Response{Message: "Vous devez renseigner la passphrase", Success: false})
+		return c.JSON(http.StatusBadRequest, models.Response{Message: "Vous devez renseigner la passphrase", Success: false})
 	}
 
 	if username == "" {
-		return c.JSON(400, models.Response{Message: "Vous devez renseigner le nom d'utilisateur", Success: false})
+		return c.JSON(http.StatusBadRequest, models.Response{Message: "Vous devez renseigner le nom d'utilisateur", Success: false})
 	}
 
 	// Vérifier si l'utilisateur existe
@@ -52,7 +53,7 @@ func Login(c echo.Context) error {
 	}
 
 	if !userExists {
-		return c.JSON(400, models.Response{Message: "L'utilisateur n'existe pas. Vérifiez l'username.", Success: false})
+		return c.JSON(http.StatusBadRequest, models.Response{Message: "L'utilisateur n'existe pas. Vérifiez l'username.", Success: false})
 	}
 
 	// Regénérer le token
@@ -66,5 +67,5 @@ func Login(c echo.Context) error {
 		return c.JSON(500, models.Response{Message: "Une erreur s'est passé de notre coté, réessayez plus tard.", Success: false})
 	}
 
-	return c.JSON(200, models.Response{Success: true, Message: tokenString})
+	return c.JSON(http.StatusAccepted, models.Response{Success: true, Message: tokenString})
 }

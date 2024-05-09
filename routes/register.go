@@ -85,11 +85,11 @@ func Register(c echo.Context) error {
 
 	// Vérifier si le nom d'utilisateur et le nom sont fournis
 	if username == "" {
-		return c.JSON(400, models.Response{Message: "Le nom d'utilisateur est requis", Success: false})
+		return c.JSON(http.StatusBadRequest, models.Response{Message: "Le nom d'utilisateur est requis", Success: false})
 	}
 
 	if name == "" {
-		return c.JSON(400, models.Response{Message: "Le nom est requis", Success: false})
+		return c.JSON(http.StatusBadRequest, models.Response{Message: "Le nom est requis", Success: false})
 	}
 
 	// Créer un nouvel utilisateur
@@ -131,7 +131,7 @@ func Register(c echo.Context) error {
 	for _, u := range data.Users {
 		if u.Username == user.Username {
 			// Si oui on renvoie une erreur
-			return echo.NewHTTPError(400, "Le nom d'utilisateur existe déjà")
+			return echo.NewHTTPError(http.StatusBadRequest, "Le nom d'utilisateur existe déjà")
 		}
 	}
 

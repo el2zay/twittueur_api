@@ -26,12 +26,16 @@ func main() {
 
 	// postsLength
 	e.GET("/globalPostsLength", routes.GlobalPostsLength)
-	e.GET("/userPostsLength", routes.UserPostsLength)
 
 	// Likes
 	e.POST("/likes", routes.PostLikes)
 	e.GET("/likes", routes.GetLikes)
 	e.GET("/postsLikes", routes.GetLikesByPost)
+
+	// Bookmarks
+	e.POST("/bookmarks", routes.PostBookmarks)
+	e.GET("/bookmarks", routes.GetBookmarks)
+	e.GET("/postsBookmarks", routes.GetBookmarksByPost)
 
 	// User
 	e.GET("/user", routes.GetUser)

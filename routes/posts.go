@@ -41,7 +41,7 @@ func PostData(c echo.Context) error {
 	authorization := c.Request().Header.Get("Authorization")
 
 	if authorization == "" {
-		return c.JSON(400, models.Response{Success: false, Message: "Vous devez renseigner un token."})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
 	}
 
 	tokenString := authorization[7:] // On ignore les 7 premières lettres (Bearer )
@@ -49,7 +49,7 @@ func PostData(c echo.Context) error {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
-		return c.JSON(400, models.Response{Success: false, Message: "Token invalide"})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Token invalide"})
 	}
 
 	// Récupérer l'passphrase à partir du token
@@ -66,19 +66,19 @@ func PostData(c echo.Context) error {
 
 	// Les vérifications
 	if body == "" {
-		return c.JSON(400, models.Response{Success: false, Message: "Le body est requis."})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Le body est requis."})
 	}
 
 	if date == "" {
-		return c.JSON(400, models.Response{Success: false, Message: "La date est requise."})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "La date est requise."})
 	}
 
 	if device == "" {
-		return c.JSON(400, models.Response{Success: false, Message: "L'appareil est requis.'"})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "L'appareil est requis.'"})
 	}
 
 	if len(body) > 1000 {
-		return c.JSON(400, models.Response{Success: false, Message: "Le texte du body ne doit pas dépasser les 1000 caractères"})
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Le texte du body ne doit pas dépasser les 1000 caractères"})
 	}
 
 	if comment != "" {
@@ -110,13 +110,15 @@ func PostData(c echo.Context) error {
 	}
 
 	post := &models.Post{
-		ID:         id,
-		Body:       body,
-		Date:       date,
-		Device:     device,
-		Passphrase: passphrase,
-		Likedby:    []string{},
-		IsComment:  comment != "",
+		ID:           id,
+		Body:         body,
+		Date:         date,
+		Device:       device,
+		Passphrase:   passphrase,
+		Likedby:      []string{},
+		Bookmarkedby: []string{},
+		Comments:     []string{},
+		IsComment:    comment != "",
 	}
 
 	// Lire l'image
@@ -124,7 +126,7 @@ func PostData(c echo.Context) error {
 	if err != nil {
 		if err != http.ErrMissingFile {
 			// Si une autre erreur se produit, retournez une réponse d'erreur
-			return c.JSON(400, models.Response{Success: false, Message: "Une erreur s'est produite lors de la lecture de l'image"})
+			return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Une erreur s'est produite lors de la lecture de l'image"})
 		}
 		// S'il n'y a pas d'image on continue.
 	} else {

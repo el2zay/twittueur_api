@@ -13,7 +13,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func PostLikes(c echo.Context) error {
+/*
+On va copier le code du fichier likes.go et le modifier pour qu'il corresponde à la gestion des bookmarks.
+
+Le code est donc très similaire à celui de likes.go, mais on remplace les mots "like" par "bookmark" et on change les noms des fonctions et des variables.
+*/
+
+func PostBookmarks(c echo.Context) error {
 	// Récupérer le token du header
 	authorization := c.Request().Header.Get("Authorization")
 
@@ -52,7 +58,7 @@ func PostLikes(c echo.Context) error {
 		return err
 	}
 
-	// Variable pour dire si on a retiré ou ajouté le like
+	// Variable pour dire si on a retiré ou ajouté le bookmark
 	var wordResponse string
 
 	var data models.PostRequest
@@ -63,23 +69,23 @@ func PostLikes(c echo.Context) error {
 	// Parcourir les posts pour trouver celui avec l'id spécifié
 	for i, post := range data.Posts {
 		if post.ID == id {
-			// Trouvé le post, récupérer la liste des likes directement
-			likedby := post.Likedby
-			// Vérifier si l'utilisateur a déjà liké le post
-			for j, user := range likedby {
+			// Trouvé le post, récupérer la liste des bookmarks directement
+			bookmarkedby := post.Bookmarkedby
+			// Vérifier si l'utilisateur a déjà bookmark le post
+			for j, user := range bookmarkedby {
 				if user == username {
-					// Si oui, retirer le like
-					likedby = append(likedby[:j], likedby[j+1:]...)
+					// Si oui, retirer le bookmark
+					bookmarkedby = append(bookmarkedby[:j], bookmarkedby[j+1:]...)
 					wordResponse = "retiré"
 					break
 				}
 			}
-			// Si l'utilisateur n'a pas liké le post, ajouter le like
+			// Si l'utilisateur n'a pas bookmark le post, ajouter le bookmark
 			if wordResponse == "" {
-				likedby = append(likedby, username)
+				bookmarkedby = append(bookmarkedby, username)
 				wordResponse = "ajouté"
 			}
-			data.Posts[i].Likedby = likedby
+			data.Posts[i].Bookmarkedby = bookmarkedby
 			break
 		}
 	}
@@ -90,11 +96,11 @@ func PostLikes(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, models.Response{Success: true, Message: fmt.Sprintf("Like %s avec succès.", wordResponse)})
+	return c.JSON(http.StatusOK, models.Response{Success: true, Message: fmt.Sprintf("Bookmark %s avec succès.", wordResponse)})
 
 }
 
-func GetLikes(c echo.Context) error {
+func GetBookmarks(c echo.Context) error {
 	authorization := c.Request().Header.Get("Authorization")
 
 	if authorization == "" {
@@ -124,8 +130,8 @@ func GetLikes(c echo.Context) error {
 	// Parcourir les posts pour trouver celui avec l'id spécifié
 	for _, post := range data.Posts {
 		if post.ID == id {
-			// Trouvé le post, retourner la liste des likes
-			return c.JSON(http.StatusOK, models.Response{Success: true, Data: post.Likedby})
+			// Trouvé le post, retourner la liste des bookmarks
+			return c.JSON(http.StatusOK, models.Response{Success: true, Data: post.Bookmarkedby})
 		}
 	}
 
