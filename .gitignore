@@ -1,2 +1,3 @@
-# Ignorer le dossier db/
+# Ignorer le dossier db/ et le fichier .DS_Store
 db/
+.DS_Store
