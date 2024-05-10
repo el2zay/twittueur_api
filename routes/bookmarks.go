@@ -138,3 +138,57 @@ func GetBookmarks(c echo.Context) error {
 	// Si le post n'est pas trouvé
 	return c.JSON(http.StatusNotFound, models.Response{Success: false, Message: "Post non trouvé."})
 }
+
+func GetUserBookmarks(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+
+	if authorization == "" {
+		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
+	}
+	err := utils.IsTokenExists(c, authorization)
+	if err != nil {
+		return err
+	}
+
+	tokenString := authorization[7:]
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Token invalide"})
+		return errors.New("token invalide")
+	}
+
+	var username string
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		username = claims["username"].(string) // On récupère le username depuis le token
+	}
+
+	// Configuration de Viper pour lire le fichier posts.json
+	viper.SetConfigName("posts")
+	viper.SetConfigType("json")
+	viper.AddConfigPath("db")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	var data models.PostRequest
+
+	if err := viper.Unmarshal(&data); err != nil {
+		return err
+	}
+
+	var bookmarks []models.Post
+
+	// Parcourir les posts pour trouver ceux bookmarkés par l'utilisateur
+	for _, post := range data.Posts {
+		for _, user := range post.Bookmarkedby {
+			if user == username {
+				bookmarks = append(bookmarks, post)
+			}
+		}
+	}
+	return c.JSON(http.StatusOK, models.Response{Success: true, Data: bookmarks})
+}

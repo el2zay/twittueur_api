@@ -28,11 +28,19 @@ func GlobalPostsLength(c echo.Context) error {
 		return c.JSON(500, models.Response{Message: "Une erreur s'est produite.", Success: false})
 	}
 
+	// Compter seulement les posts où isComments est false
+	count := 0
+	for _, post := range data.Posts {
+		if !post.IsComment {
+			count++
+		}
+	}
+
 	// Retourner la longueur du slice de posts
-	return c.JSON(http.StatusOK, models.Response{Message: strconv.Itoa(len(data.Posts)), Success: true})
+	return c.JSON(http.StatusOK, models.Response{Message: strconv.Itoa(count), Success: true})
 }
 
-func GetLikesByPost(c echo.Context) error {
+func GetLengthLikesByPost(c echo.Context) error {
 	// Récupérer le token du header
 	authorization := c.Request().Header.Get("Authorization")
 
@@ -65,7 +73,7 @@ func GetLikesByPost(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, models.Response{Success: false, Message: "Le post n'existe pas."})
 }
 
-func GetBookmarksByPost(c echo.Context) error {
+func GetLenghtBookmarksByPost(c echo.Context) error {
 	// Récupérer le token du header
 	authorization := c.Request().Header.Get("Authorization")
 

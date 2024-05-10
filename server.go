@@ -30,12 +30,13 @@ func main() {
 	// Likes
 	e.POST("/likes", routes.PostLikes)
 	e.GET("/likes", routes.GetLikes)
-	e.GET("/postsLikes", routes.GetLikesByPost)
+	e.GET("/postsLikes", routes.GetLengthLikesByPost)
 
 	// Bookmarks
 	e.POST("/bookmarks", routes.PostBookmarks)
 	e.GET("/bookmarks", routes.GetBookmarks)
-	e.GET("/postsBookmarks", routes.GetBookmarksByPost)
+	e.GET("/postsBookmarks", routes.GetLenghtBookmarksByPost)
+	e.GET("/bookmarksByUser", routes.GetUserBookmarks)
 
 	// User
 	e.GET("/user", routes.GetUser)
