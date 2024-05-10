@@ -92,7 +92,7 @@ func PostData(c echo.Context) error {
 		if err := viper.Unmarshal(&data); err != nil {
 			return err
 		}
-		// ! REGARDER ICI POUR LES LIKES
+
 		// Trouver le post avec l'ID correspondant à la valeur de comment
 		for i, post := range data.Posts {
 			if post.ID == comment {
@@ -224,30 +224,49 @@ func GetPosts(c echo.Context) error {
 	// Cette fonction échange chaque posts entre eux pour les "mélanger".
 	rand.Shuffle(len(data.Posts), func(i, j int) { data.Posts[i], data.Posts[j] = data.Posts[j], data.Posts[i] })
 
-	var posts []models.Post // Créer une slice vide pour les posts
-
+	// Définir posts comme un tableau vide de posts
+	var posts []models.Post
 	// Boucle pour ajouter les 10 premiers post à la List
 	for _, post := range data.Posts {
+
+		if showComments == "true" && !(strings.Contains(post.ID, idsParam) && post.Comments != nil) { //Si l'id est dans la slice ou que ce n'est pas un commentaire
+			println("continue")
+			continue //  alors que l'utilisateur n'en veut pas, alors on ignore ce post
+		} else if showComments == "true" {
+			// Boucle for pour récupérer le commentaire associé au post
+			for _, commentId := range post.Comments {
+				// Trouver le commentaire avec l'ID correspondant à la valeur de comment
+				for _, comment := range data.Posts {
+					if comment.ID == commentId {
+						// Ajouter le commentaire au tableau des commentaires du post
+						posts = append(posts, comment)
+					}
+				}
+			}
+		}
+
 		if contains(ids, post.ID) || (showComments == "false" && post.IsComment) { //Si l'id est dans la slice ou que c'est un commentaire
 			continue //  alors que l'utilisateur n'en veut pas, alors on ignore ce post
 		}
 
+		// Si on a déjà 10 posts, on arrête la boucle
 		if len(posts) == 10 {
 			break
 		}
 		posts = append(posts, post) // Ajouter le post à la liste
 	}
-
+	if posts == nil {
+		posts = []models.Post{}
+	}
 	// Retourner les 10 premiers posts
 	return c.JSON(http.StatusOK, posts)
 }
 
-// la fonction contains vérifie si une partie contient une certaine valeur
+// la fonction contains vérifie si une partie contient une certaine valeur car dans un cas on ne pourra pas se servir de strings.Contains
 func contains(slice []string, val string) bool {
+	set := make(map[string]bool)
 	for _, item := range slice {
-		if item == val {
-			return true
-		}
+		set[item] = true
 	}
-	return false
+	return set[val]
 }
