@@ -45,9 +45,9 @@ func Login(c echo.Context) error {
 	}
 
 	userExists := false
-	for _, user := range users {
+	for _, user := range users { // Parcourir les utilisateurs
 		if user.Username == username && user.Passphrase == passphrase {
-			userExists = true
+			userExists = true // Si l'utilisateur existe, on sort de la boucle
 			break
 		}
 	}
@@ -62,7 +62,7 @@ func Login(c echo.Context) error {
 		"passphrase": passphrase,
 	})
 
-	tokenString, _err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenString, _err := token.SignedString([]byte(os.Getenv("JWT_SECRET"))) // "Signer" le token
 	if _err != nil {
 		return c.JSON(500, models.Response{Message: "Une erreur s'est passé de notre coté, réessayez plus tard.", Success: false})
 	}

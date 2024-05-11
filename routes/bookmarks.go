@@ -45,7 +45,7 @@ func PostBookmarks(c echo.Context) error {
 	var username string
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		username = claims["username"].(string)
+		username = claims["username"].(string) // On récupère le username depuis le token
 	}
 
 	id := c.FormValue("id")
@@ -53,7 +53,7 @@ func PostBookmarks(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un id."})
 	}
 
-	err = utils.IsPostExists(c, id)
+	err = utils.IsPostExists(c, id) // Vérifier si le post existe
 	if err != nil {
 		return err
 	}
@@ -101,22 +101,22 @@ func PostBookmarks(c echo.Context) error {
 }
 
 func GetBookmarks(c echo.Context) error {
-	authorization := c.Request().Header.Get("Authorization")
+	authorization := c.Request().Header.Get("Authorization") // Récupérer le token du header
 
 	if authorization == "" {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
 	}
-	err := utils.IsTokenExists(c, authorization)
+	err := utils.IsTokenExists(c, authorization) // Vérifier si le token existe
 	if err != nil {
 		return err
 	}
 
-	id := c.FormValue("id")
+	id := c.FormValue("id") // Récupérer l'id du post
 	if id == "" {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un id."})
 	}
 
-	err = utils.IsPostExists(c, id)
+	err = utils.IsPostExists(c, id) // Vérifier si le post existe
 	if err != nil {
 		return err
 	}
@@ -140,19 +140,19 @@ func GetBookmarks(c echo.Context) error {
 }
 
 func GetUserBookmarks(c echo.Context) error {
-	authorization := c.Request().Header.Get("Authorization")
+	authorization := c.Request().Header.Get("Authorization") // Récupérer le token du header
 
 	if authorization == "" {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
 	}
-	err := utils.IsTokenExists(c, authorization)
+	err := utils.IsTokenExists(c, authorization) // Vérifier si le token existe
 	if err != nil {
 		return err
 	}
 
-	tokenString := authorization[7:]
+	tokenString := authorization[7:] // On ignore les 7 premières lettres (Bearer )
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil // Vérifier si le token est valide
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Token invalide"})

@@ -48,12 +48,12 @@ func GetLengthLikesByPost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
 	}
 
-	err := utils.IsTokenExists(c, authorization)
+	err := utils.IsTokenExists(c, authorization) // Vérifier si le token existe
 	if err != nil {
 		return err
 	}
 
-	id := c.QueryParam("id")
+	id := c.QueryParam("id") // Récupérer l'id du post
 	if id == "" {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un id."})
 	}
@@ -81,12 +81,12 @@ func GetLenghtBookmarksByPost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un token."})
 	}
 
-	err := utils.IsTokenExists(c, authorization)
+	err := utils.IsTokenExists(c, authorization) // Vérifier si le token existe
 	if err != nil {
 		return err
 	}
 
-	id := c.QueryParam("id")
+	id := c.QueryParam("id") // Récupérer l'id du post
 	if id == "" {
 		return c.JSON(http.StatusBadRequest, models.Response{Success: false, Message: "Vous devez renseigner un id."})
 	}
