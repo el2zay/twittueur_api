@@ -10,11 +10,14 @@ Ce repo contient le code source de l'API de Twittueur.
 `git clone https://github.com/el2zay/twittueur_api.git`
 
 2. Créez un dossier "db" à la racine du projet
-3. Lancez le serveur avec [Go](https://go.dev/doc/install)
+3. Créez un dossier "images" et un dossier "avatars" dans le dossier "db"
+4. Dans un terminal ou Powershell sur Windows, lancez le serveur avec [Go](https://go.dev/doc/install)
 
 `go build . && ./twittueur_api`
 
 4. Vous pouvez maintenant accéder à l'API à l'adresse http://localhost:1323
+
+> Si dans votre fichier `posts.json` vous avez également un partie "user", il s'agit d'un bug qui n'affecte pas le fonctionnement de l'API. Vous pouvez le supprimer.
 
 ## Arborescence
 - Le dossier `db` contient les fichiers de la base de données.

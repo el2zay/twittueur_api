@@ -3,6 +3,10 @@ package routes
 import (
 	"errors"
 	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	"image/png"
 	"io"
 	"math/rand"
 	"net/http"
@@ -122,7 +126,7 @@ func PostData(c echo.Context) error {
 	}
 
 	// Lire l'image
-	image, err := c.FormFile("image")
+	fileImage, err := c.FormFile("image")
 	if err != nil {
 		if err != http.ErrMissingFile {
 			// Si une autre erreur se produit, retournez une réponse d'erreur
@@ -131,7 +135,7 @@ func PostData(c echo.Context) error {
 		// S'il n'y a pas d'image on continue.
 	} else {
 		// S'il y a une image on la lit.
-		src, err := image.Open()
+		src, err := fileImage.Open()
 		if err != nil {
 			// L'erreur 500 signifie qu'il y a une erreur côté serveur
 			return c.JSON(500, models.Response{Success: false, Message: "Une erreur s'est produite lors de l'ouverture de l'imagee"})
@@ -140,22 +144,46 @@ func PostData(c echo.Context) error {
 		defer src.Close()
 
 		// Récupérer l'extension du fichier
-		ext := filepath.Ext(image.Filename)
-		imagePath := "db/images/" + id + ext
+		ext := filepath.Ext(fileImage.Filename)
 
-		// Créé un fichier dans le dossier db/images avec l'id du post
-		dst, err := os.Create(imagePath)
-		if err != nil {
-			return err
+		if ext != ".png" {
+			img, _, err := image.Decode(src)
+			if err != nil {
+				// Afficher une erreur compréhensible
+				print(err.Error())
+				return err
+			}
+
+			// Créer un nouveau fichier png
+			dst, err := os.Create("db/images/" + id + ".png")
+			if err != nil {
+				return err
+			}
+			defer dst.Close()
+
+			// Écrire l'image en png
+			err = png.Encode(dst, img)
+			if err != nil {
+				print(err)
+				return err
+			}
+
+			post.Image = "db/images/" + id + ".png"
+		} else {
+			// Créé un fichier dans le dossier db/images avec comme nom l'username
+			dst, err := os.Create("db/images/" + id + ext)
+			if err != nil {
+				return err
+			}
+			defer dst.Close()
+
+			// Copier l'image de la raquête vers celle du serveur.
+			if _, err = io.Copy(dst, src); err != nil {
+				return err
+			}
+
+			post.Image = "db/images/" + id + ".png"
 		}
-		defer dst.Close()
-
-		// Copier l'image de la raquête vers celle du serveur.
-		if _, err = io.Copy(dst, src); err != nil {
-			return err
-		}
-
-		post.Image = imagePath
 	}
 
 	// On vérifie si le fichier users.json existe, sinon on le créé
